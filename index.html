@@ -71,14 +71,47 @@
         }
         tr {
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
+            transition: transform 0.2s, opacity 0.3s;
         }
         tr:hover {
             transform: translateY(-2px);
         }
+        tr.filtered-out {
+            opacity: 0.5;
+        }
         .emoji {
             font-size: 1.2em;
             margin-right: 5px;
+        }
+        .highlight {
+            background-color: #fffacd;
+        }
+        .top-result {
+            animation: glow 2s infinite alternate;
+            position: relative;
+            z-index: 1;
+        }
+        @keyframes glow {
+            from {
+                box-shadow: 0 0 5px -5px #ffd700;
+            }
+            to {
+                box-shadow: 0 0 20px 5px #ffd700;
+            }
+        }
+        .top-result::before {
+            content: "🏆 Bedste tilbud!";
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ffd700;
+            color: #333;
+            padding: 2px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -129,27 +162,40 @@
             const minData = parseFloat(document.getElementById('minData').value) || 0;
             const sortBy = document.getElementById('sortBy').value;
 
-            let filteredPlans = plans.filter(plan => parseFloat(plan.data) >= minData);
+            plans.forEach(plan => {
+                plan.matchesFilter = parseFloat(plan.data) >= minData;
+            });
 
-            if (sortBy === 'price') {
-                filteredPlans.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-            } else if (sortBy === 'best') {
-                filteredPlans.sort((a, b) => {
+            plans.sort((a, b) => {
+                if (sortBy === 'price') {
+                    return parseFloat(a.price) - parseFloat(b.price);
+                } else if (sortBy === 'best') {
                     const scoreA = (parseFloat(a.trustpilot) * 2) - parseFloat(a.price);
                     const scoreB = (parseFloat(b.trustpilot) * 2) - parseFloat(b.price);
                     return scoreB - scoreA;
-                });
-            }
+                }
+            });
 
-            displayPlans(filteredPlans);
+            displayPlans(plans);
         }
 
         function displayPlans(plansToDisplay) {
             const tbody = document.querySelector('#planTable tbody');
             tbody.innerHTML = '';
 
-            plansToDisplay.forEach(plan => {
+            let topResultDisplayed = false;
+
+            plansToDisplay.forEach((plan, index) => {
                 const row = tbody.insertRow();
+                if (!plan.matchesFilter) {
+                    row.classList.add('filtered-out');
+                } else {
+                    row.classList.add('highlight');
+                    if (!topResultDisplayed) {
+                        row.classList.add('top-result');
+                        topResultDisplayed = true;
+                    }
+                }
                 row.insertCell(0).textContent = plan.provider;
                 row.insertCell(1).textContent = plan.plan;
                 row.insertCell(2).textContent = plan.data;
