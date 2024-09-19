@@ -9,49 +9,53 @@
     <!-- Chart.js for Interactive Charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Google Fonts for Enhanced Typography -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         /* CSS Variables for Light and Dark Modes */
         :root {
-            --bg-color: #f0f0f0;
-            --text-color: #333;
-            --container-bg: #fff;
-            --header-bg: #f8f8f8;
-            --button-bg: #007aff;
-            --button-hover-bg: #0056b3;
-            --border-color: #ddd;
-            --best-offer-bg: #fffacd;
-            --best-offer-border: #ffd700;
-            --best-offer-shadow: rgba(255, 215, 0, 0.7);
-            --label-best-offer: #ffd700;
-            --label-good-value: #4da6ff;
-            --label-unlimited-data: #4CAF50;
-            --favorite-color: #ffcc00;
-            --tag-bg: #e0e0e0;
-            --tag-text: #333;
-            --tag-border: #ccc;
+            --bg-color: #ffffff;
+            --text-color: #333333;
+            --container-bg: #f9f9f9;
+            --header-bg: #ffffff;
+            --button-bg: #1abc9c;
+            --button-hover-bg: #16a085;
+            --border-color: #e0e0e0;
+            --best-offer-bg: #e0f7fa;
+            --best-offer-border: #1abc9c;
+            --best-offer-shadow: rgba(26, 188, 156, 0.5);
+            --label-best-offer: #1abc9c;
+            --label-good-value: #3498db;
+            --label-unlimited-data: #2ecc71;
+            --favorite-color: #f1c40f;
+            --tag-bg: #ecf0f1;
+            --tag-text: #7f8c8d;
+            --tag-border: #bdc3c7;
             --modal-bg: rgba(0,0,0,0.5);
+            --accent-color: #1abc9c;
+            --card-shadow: rgba(0, 0, 0, 0.05);
         }
 
         body.dark-mode {
-            --bg-color: #121212;
-            --text-color: #e0e0e0;
-            --container-bg: #1e1e1e;
-            --header-bg: #2c2c2c;
-            --button-bg: #1a73e8;
-            --button-hover-bg: #1669c1;
-            --border-color: #444;
-            --best-offer-bg: #ffd70033; /* Semi-transparent */
-            --best-offer-border: #ffd700;
-            --best-offer-shadow: rgba(255, 215, 0, 0.7);
-            --label-best-offer: #ffd700;
-            --label-good-value: #4da6ff;
-            --label-unlimited-data: #4CAF50;
-            --favorite-color: #ffcc00;
-            --tag-bg: #333;
-            --tag-text: #e0e0e0;
-            --tag-border: #555;
+            --bg-color: #2c3e50;
+            --text-color: #ecf0f1;
+            --container-bg: #34495e;
+            --header-bg: #2c3e50;
+            --button-bg: #16a085;
+            --button-hover-bg: #148f77;
+            --border-color: #7f8c8d;
+            --best-offer-bg: #16a08533;
+            --best-offer-border: #1abc9c;
+            --best-offer-shadow: rgba(26, 188, 156, 0.7);
+            --label-best-offer: #1abc9c;
+            --label-good-value: #3498db;
+            --label-unlimited-data: #2ecc71;
+            --favorite-color: #f1c40f;
+            --tag-bg: #7f8c8d;
+            --tag-text: #ecf0f1;
+            --tag-border: #95a5a6;
             --modal-bg: rgba(0,0,0,0.7);
+            --accent-color: #1abc9c;
+            --card-shadow: rgba(0, 0, 0, 0.2);
         }
 
         body {
@@ -63,141 +67,165 @@
             color: var(--text-color);
             transition: background-color 0.3s, color 0.3s;
         }
+
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
             background-color: var(--container-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px var(--card-shadow);
             transition: background-color 0.3s;
         }
+
         h1 {
             font-size: 2.5em;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 40px;
+            color: var(--accent-color);
         }
+
         .filters, .controls, .recommendations, .cost-estimator {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             align-items: center;
         }
+
         .filter-group, .search-group, .recommendation-group, .cost-group {
             flex: 1;
             min-width: 200px;
         }
+
         .filters label, .search-group label, .recommendation-group label, .cost-group label {
             display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-weight: 500;
+            margin-bottom: 8px;
         }
-        input[type="range"], input[type="text"], select {
+
+        input[type="range"], input[type="number"], input[type="text"], select {
             width: 100%;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            background-color: var(--container-bg);
+            color: var(--text-color);
             transition: background-color 0.3s, color 0.3s;
         }
+
         .range-values, .search-group, .recommendation-group, .cost-group {
             margin-top: 5px;
         }
+
         .range-values {
             display: flex;
             justify-content: space-between;
-            font-size: 0.8em;
-            color: #666;
+            font-size: 0.9em;
+            color: #7f8c8d;
         }
+
         button {
             background-color: var(--button-bg);
-            color: #fff;
+            color: #ffffff;
             border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
+            padding: 12px 24px;
+            border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s, transform 0.2s;
-            height: fit-content;
             display: flex;
             align-items: center;
             gap: 5px;
+            font-size: 1em;
         }
+
         button:hover {
             background-color: var(--button-hover-bg);
-            transform: scale(1.05);
+            transform: translateY(-2px);
         }
+
         table {
             width: 100%;
             border-collapse: separate;
-            border-spacing: 0 16px;
+            border-spacing: 0 20px;
         }
+
         th, td {
-            padding: 12px;
+            padding: 15px;
             text-align: left;
             background-color: var(--container-bg);
             position: relative;
             border: 1px solid var(--border-color);
+            border-radius: 8px;
             transition: background-color 0.3s, color 0.3s;
         }
+
         th {
             background-color: var(--header-bg);
-            font-weight: bold;
+            font-weight: 500;
             cursor: pointer;
             user-select: none;
             position: relative;
         }
+
         th.sort-asc::after {
             content: " ▲";
             position: absolute;
             right: 10px;
             font-size: 0.8em;
         }
+
         th.sort-desc::after {
             content: " ▼";
             position: absolute;
             right: 10px;
             font-size: 0.8em;
         }
+
         tr {
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px var(--card-shadow);
             transition: transform 0.2s, opacity 0.3s;
             position: relative;
+            border-radius: 8px;
         }
+
         tr:hover {
-            transform: translateY(-2px);
+            transform: translateY(-5px);
         }
+
         .emoji {
             font-size: 1.2em;
             margin-right: 5px;
         }
+
         /* Label Styles */
         .label {
             display: inline-block;
-            font-size: 0.75em;
-            font-weight: bold;
+            font-size: 0.8em;
+            font-weight: 500;
             white-space: nowrap;
             margin-right: 5px;
-            padding: 2px 8px;
-            border-radius: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
             transition: background-color 0.3s, color 0.3s;
         }
 
         .best-offer-label {
             background-color: var(--label-best-offer);
-            color: #333;
+            color: #333333;
         }
 
         .good-value-label {
             background-color: var(--label-good-value);
-            color: #fff;
+            color: #ffffff;
         }
 
         .unlimited-data-label {
-            font-size: 0.85em;
+            font-size: 0.8em;
             background-color: var(--label-unlimited-data);
-            color: white;
-            padding: 2px 6px;
-            border-radius: 10px;
+            color: #ffffff;
+            padding: 3px 8px;
+            border-radius: 15px;
             white-space: nowrap;
             margin-left: 5px;
         }
@@ -208,8 +236,8 @@
             font-size: 0.7em;
             background-color: var(--tag-bg);
             color: var(--tag-text);
-            padding: 2px 6px;
-            border-radius: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
             margin-right: 5px;
             border: 1px solid var(--tag-border);
             transition: background-color 0.3s, color 0.3s;
@@ -225,57 +253,59 @@
         /* Favorite Star Styles */
         .favorite {
             cursor: pointer;
-            font-size: 1.5em;
+            font-size: 1.3em;
             color: #ccc;
             transition: color 0.3s;
             user-select: none;
         }
+
         .favorite.favorited {
             color: var(--favorite-color);
         }
 
         /* Dark mode specific styles */
         body.dark-mode th {
-            background-color: #2c2c2c;
+            background-color: #2c3e50;
         }
 
         body.dark-mode tr.best-offer td {
-            background-color: #ffd70033; /* Semi-transparent light yellow */
+            background-color: #16a08533; /* Semi-transparent accent color */
         }
 
         /* Pagination Styles */
         .pagination {
             display: flex;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 30px;
             gap: 10px;
         }
 
         .pagination button {
-            padding: 8px 12px;
+            padding: 10px 16px;
             border: 1px solid #ccc;
             background-color: var(--container-bg);
             color: var(--text-color);
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 5px;
             transition: background-color 0.3s, color 0.3s;
+            font-size: 1em;
         }
 
         .pagination button.active {
             background-color: var(--button-bg);
-            color: #fff;
+            color: #ffffff;
             border-color: var(--button-bg);
         }
 
         .pagination button:hover:not(.active) {
-            background-color: #ddd;
+            background-color: #e0e0e0;
         }
 
         /* Search Bar Styles */
         .search-group input[type="text"] {
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 5px;
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -284,7 +314,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            font-weight: bold;
+            font-weight: 500;
         }
 
         .switch {
@@ -366,21 +396,22 @@
         .modal-content {
             background-color: var(--container-bg);
             margin: 5% auto; 
-            padding: 20px;
+            padding: 30px;
             border: 1px solid var(--border-color);
             width: 90%; 
             max-width: 1000px;
-            border-radius: 8px;
+            border-radius: 10px;
             position: relative;
             color: var(--text-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
             animation: fadeIn 0.5s;
         }
 
         .close {
             color: var(--text-color);
             position: absolute;
-            top: 10px;
-            right: 25px;
+            top: 20px;
+            right: 30px;
             font-size: 30px;
             font-weight: bold;
             cursor: pointer;
@@ -388,7 +419,7 @@
 
         .close:hover,
         .close:focus {
-            color: #000;
+            color: #000000;
             text-decoration: none;
         }
 
@@ -400,8 +431,9 @@
 
         .compare-table th, .compare-table td {
             border: 1px solid var(--border-color);
-            padding: 10px;
+            padding: 15px;
             text-align: center;
+            border-radius: 5px;
         }
 
         @keyframes fadeIn {
@@ -418,14 +450,15 @@
             width: 100%;
         }
 
-        /* Wishlist Styles */
-        .wishlist-btn {
-            background-color: #ff5722;
-            margin-left: 10px;
+        .recommendations button, .cost-estimator button {
+            width: 100%;
         }
 
-        .wishlist-btn:hover {
-            background-color: #e64a19;
+        /* Cost Estimator Styles */
+        .cost-results {
+            margin-top: 15px;
+            font-weight: 500;
+            color: var(--accent-color);
         }
 
         /* Plan Features List */
@@ -441,30 +474,72 @@
         .plan-features li {
             background-color: var(--tag-bg);
             color: var(--tag-text);
-            padding: 2px 6px;
-            border-radius: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
             font-size: 0.7em;
             border: 1px solid var(--tag-border);
             transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Cost Estimator Styles */
-        .cost-estimator input, .cost-estimator button {
-            margin-top: 5px;
+        /* Wishlist Styles */
+        .wishlist-btn {
+            background-color: #e74c3c;
+            margin-left: 10px;
         }
 
-        .cost-results {
-            margin-top: 10px;
-            font-weight: bold;
+        .wishlist-btn:hover {
+            background-color: #c0392b;
         }
 
         /* Recommendations Chart */
         #recommendChart {
             max-width: 100%;
             height: 400px;
-            margin-top: 20px;
+            margin-top: 30px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--container-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--border-color);
+            border-radius: 4px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .filters, .controls, .recommendations, .cost-estimator {
+                flex-direction: column;
+            }
+
+            th, td {
+                font-size: 0.9em;
+            }
+
+            .label {
+                font-size: 0.75em;
+                padding: 3px 8px;
+            }
+
+            .tag {
+                font-size: 0.6em;
+                padding: 3px 6px;
+            }
+
+            .favorite {
+                font-size: 1.2em;
+            }
+        }
     </style>
 </head>
 <body>
@@ -475,20 +550,20 @@
         <div class="filters">
             <div class="filter-group">
                 <label for="dataSlider"><span class="emoji">📊</span> Min. data (GB):</label>
-                <input type="range" id="dataSlider" min="0" max="100" step="1" value="0">
+                <input type="range" id="dataSlider" min="0" max="1000" step="10" value="0">
                 <div class="range-values">
                     <span>0 GB</span>
                     <span id="dataValue">0 GB</span>
-                    <span>100 GB</span>
+                    <span>1000 GB</span>
                 </div>
             </div>
             <div class="filter-group">
                 <label for="priceSlider"><span class="emoji">💰</span> Maks. pris (DKK):</label>
-                <input type="range" id="priceSlider" min="0" max="500" step="10" value="500">
+                <input type="range" id="priceSlider" min="0" max="5000" step="50" value="5000">
                 <div class="range-values">
                     <span>0 kr</span>
-                    <span id="priceValue">500 kr</span>
-                    <span>500 kr</span>
+                    <span id="priceValue">5000 kr</span>
+                    <span>5000 kr</span>
                 </div>
             </div>
             <div class="search-group">
@@ -614,9 +689,10 @@
                 download: true,
                 header: true,
                 complete: function(results) {
+                    // Ensure each plan has a unique ID
                     plans = results.data.map((plan, index) => ({
                         ...plan,
-                        id: plan.id || index.toString(), // Ensure each plan has a unique ID
+                        id: plan.id || index.toString(),
                         features: plan.features ? plan.features.split(';') : []
                     }));
                     calculateScores();
@@ -663,7 +739,6 @@
                 const matchesSearch = plan.provider.toLowerCase().includes(searchQuery) ||
                                       plan.plan.toLowerCase().includes(searchQuery);
                 const isFavorite = favorites.includes(plan.id);
-                const isInWishlist = wishlist.includes(plan.id);
                 return meetsData && meetsPrice && matchesSearch && (!showFavoritesOnly || isFavorite);
             });
 
@@ -954,7 +1029,7 @@
             }).sort((a, b) => b.score - a.score).slice(0, 5); // Top 5 recommendations
 
             // Display Recommendations in Chart
-            const labels = recommendedPlans.map(plan => plan.provider + " " + plan.plan);
+            const labels = recommendedPlans.map(plan => `${plan.provider} ${plan.plan}`);
             const data = recommendedPlans.map(plan => ({
                 price: parseFloat(plan.price),
                 data: parseFloat(plan.data),
@@ -974,28 +1049,37 @@
                         {
                             label: 'Pris (kr)',
                             data: data.map(d => d.price),
-                            backgroundColor: 'rgba(0, 122, 255, 0.6)',
-                            borderColor: 'rgba(0, 122, 255, 1)',
+                            backgroundColor: 'rgba(26, 188, 156, 0.6)',
+                            borderColor: 'rgba(26, 188, 156, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Data (GB)',
                             data: data.map(d => d.data),
-                            backgroundColor: 'rgba(76, 175, 80, 0.6)',
-                            borderColor: 'rgba(76, 175, 80, 1)',
+                            backgroundColor: 'rgba(52, 152, 219, 0.6)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
                             borderWidth: 1
                         },
                         {
                             label: 'Trustpilot ⭐',
                             data: data.map(d => d.trust),
-                            backgroundColor: 'rgba(255, 193, 7, 0.6)',
-                            borderColor: 'rgba(255, 193, 7, 1)',
+                            backgroundColor: 'rgba(231, 76, 60, 0.6)',
+                            borderColor: 'rgba(231, 76, 60, 1)',
                             borderWidth: 1
                         }
                     ]
                 },
                 options: {
                     responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Anbefalede Abonnementer'
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: true
