@@ -4,7 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📱 Mobilabonnementer DK</title>
+    <!-- PapaParse for CSV Parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <!-- Chart.js for Interactive Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts for Enhanced Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
         /* CSS Variables for Light and Dark Modes */
         :root {
@@ -22,6 +27,10 @@
             --label-good-value: #4da6ff;
             --label-unlimited-data: #4CAF50;
             --favorite-color: #ffcc00;
+            --tag-bg: #e0e0e0;
+            --tag-text: #333;
+            --tag-border: #ccc;
+            --modal-bg: rgba(0,0,0,0.5);
         }
 
         body.dark-mode {
@@ -39,10 +48,14 @@
             --label-good-value: #4da6ff;
             --label-unlimited-data: #4CAF50;
             --favorite-color: #ffcc00;
+            --tag-bg: #333;
+            --tag-text: #e0e0e0;
+            --tag-border: #555;
+            --modal-bg: rgba(0,0,0,0.7);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+            font-family: 'Roboto', sans-serif;
             line-height: 1.6;
             margin: 0;
             padding: 20px;
@@ -51,12 +64,12 @@
             transition: background-color 0.3s, color 0.3s;
         }
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             background-color: var(--container-bg);
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             transition: background-color 0.3s;
         }
         h1 {
@@ -64,30 +77,30 @@
             text-align: center;
             margin-bottom: 20px;
         }
-        .filters, .controls {
+        .filters, .controls, .recommendations, .cost-estimator {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
             margin-bottom: 20px;
             align-items: center;
         }
-        .filter-group, .search-group {
+        .filter-group, .search-group, .recommendation-group, .cost-group {
             flex: 1;
             min-width: 200px;
         }
-        .filters label, .search-group label {
+        .filters label, .search-group label, .recommendation-group label, .cost-group label {
             display: block;
             font-weight: bold;
             margin-bottom: 5px;
         }
-        input[type="range"], input[type="text"] {
+        input[type="range"], input[type="text"], select {
             width: 100%;
-            padding: 5px;
+            padding: 8px;
             border-radius: 4px;
             border: 1px solid #ccc;
             transition: background-color 0.3s, color 0.3s;
         }
-        .range-values, .search-group {
+        .range-values, .search-group, .recommendation-group, .cost-group {
             margin-top: 5px;
         }
         .range-values {
@@ -103,11 +116,15 @@
             padding: 10px 20px;
             border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background-color 0.3s, transform 0.2s;
             height: fit-content;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         button:hover {
             background-color: var(--button-hover-bg);
+            transform: scale(1.05);
         }
         table {
             width: 100%;
@@ -162,6 +179,7 @@
             margin-right: 5px;
             padding: 2px 8px;
             border-radius: 12px;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .best-offer-label {
@@ -184,6 +202,19 @@
             margin-left: 5px;
         }
 
+        /* Tag Styles */
+        .tag {
+            display: inline-block;
+            font-size: 0.7em;
+            background-color: var(--tag-bg);
+            color: var(--tag-text);
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-right: 5px;
+            border: 1px solid var(--tag-border);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
         /* Border and glow for best offer row */
         tr.best-offer td {
             border: 2px solid var(--best-offer-border);
@@ -197,6 +228,7 @@
             font-size: 1.5em;
             color: #ccc;
             transition: color 0.3s;
+            user-select: none;
         }
         .favorite.favorited {
             color: var(--favorite-color);
@@ -327,7 +359,7 @@
             width: 100%; 
             height: 100%; 
             overflow: auto; 
-            background-color: rgba(0,0,0,0.5); 
+            background-color: var(--modal-bg);
             padding-top: 60px;
         }
 
@@ -336,10 +368,12 @@
             margin: 5% auto; 
             padding: 20px;
             border: 1px solid var(--border-color);
-            width: 80%; 
+            width: 90%; 
+            max-width: 1000px;
             border-radius: 8px;
             position: relative;
             color: var(--text-color);
+            animation: fadeIn 0.5s;
         }
 
         .close {
@@ -361,6 +395,7 @@
         .compare-table {
             width: 100%;
             border-collapse: collapse;
+            margin-top: 20px;
         }
 
         .compare-table th, .compare-table td {
@@ -369,25 +404,74 @@
             text-align: center;
         }
 
-        @media (max-width: 768px) {
-            .filters, .controls {
-                flex-direction: column;
-            }
-
-            th, td {
-                font-size: 0.9em;
-            }
-
-            .label {
-                font-size: 0.7em;
-                padding: 1px 6px;
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
+
+        /* Recommendations Section */
+        .recommendations, .cost-estimator {
+            flex-direction: column;
+        }
+
+        .recommendations input, .cost-estimator input {
+            width: 100%;
+        }
+
+        /* Wishlist Styles */
+        .wishlist-btn {
+            background-color: #ff5722;
+            margin-left: 10px;
+        }
+
+        .wishlist-btn:hover {
+            background-color: #e64a19;
+        }
+
+        /* Plan Features List */
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 5px 0 0 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .plan-features li {
+            background-color: var(--tag-bg);
+            color: var(--tag-text);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            border: 1px solid var(--tag-border);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Cost Estimator Styles */
+        .cost-estimator input, .cost-estimator button {
+            margin-top: 5px;
+        }
+
+        .cost-results {
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        /* Recommendations Chart */
+        #recommendChart {
+            max-width: 100%;
+            height: 400px;
+            margin-top: 20px;
+        }
+
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📱 Mobilabonnementer i Danmark</h1>
+        
+        <!-- Filters Section -->
         <div class="filters">
             <div class="filter-group">
                 <label for="dataSlider"><span class="emoji">📊</span> Min. data (GB):</label>
@@ -413,6 +497,43 @@
             </div>
             <button onclick="filterAndSort()"><span class="emoji">🔍</span> Find abonnementer</button>
         </div>
+        
+        <!-- Recommendations Section -->
+        <div class="recommendations">
+            <div class="recommendation-group">
+                <label for="recommendData">Data Usage (GB):</label>
+                <input type="number" id="recommendData" min="0" max="1000" value="10">
+            </div>
+            <div class="recommendation-group">
+                <label for="recommendCalls">Call Minutes:</label>
+                <input type="number" id="recommendCalls" min="0" max="5000" value="100">
+            </div>
+            <div class="recommendation-group">
+                <label for="recommendInternational">International Usage:</label>
+                <select id="recommendInternational">
+                    <option value="no">Ingen</option>
+                    <option value="yes">Ja</option>
+                </select>
+            </div>
+            <button onclick="generateRecommendations()"><span class="emoji">💡</span> Anbefal mig</button>
+            <canvas id="recommendChart"></canvas>
+        </div>
+        
+        <!-- Cost Estimator Section -->
+        <div class="cost-estimator">
+            <div class="cost-group">
+                <label for="costData">Forventet dataforbrug (GB):</label>
+                <input type="number" id="costData" min="0" max="1000" value="10">
+            </div>
+            <div class="cost-group">
+                <label for="costCalls">Forventede opkaldsminutter:</label>
+                <input type="number" id="costCalls" min="0" max="5000" value="100">
+            </div>
+            <button onclick="estimateCosts()"><span class="emoji">💸</span> Beregn omkostninger</button>
+            <div class="cost-results" id="costResults"></div>
+        </div>
+        
+        <!-- Controls Section -->
         <div class="controls">
             <div class="toggle-switch">
                 <label for="darkModeToggle">Mørk tilstand</label>
@@ -421,10 +542,15 @@
                     <span class="slider"></span>
                 </label>
             </div>
-            <button onclick="openCompareModal()"><span class="emoji">🔍</span> Sammenlign valgte</button>
+            <button onclick="openCompareModal()"><span class="emoji">📊</span> Sammenlign valgte</button>
             <button onclick="toggleFavoritesFilter()" id="favoritesFilterBtn"><span class="emoji">⭐</span> Vis Favoritter</button>
+            <button class="wishlist-btn" onclick="clearWishlist()"><span class="emoji">🗑️</span> Ryd Ønskeliste</button>
         </div>
+        
+        <!-- Loader -->
         <div class="loader" id="loader"></div>
+        
+        <!-- Plans Table -->
         <table id="planTable">
             <thead>
                 <tr>
@@ -435,30 +561,34 @@
                     <th data-sort="price"><span class="emoji">💰</span> Pris (DKK)</th>
                     <th data-sort="trustpilot"><span class="emoji">⭐</span> Trustpilot</th>
                     <th>Favorit</th>
+                    <th>Features</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
+        
+        <!-- Pagination -->
         <div class="pagination" id="pagination"></div>
-    </div>
-
-    <!-- Compare Modal -->
-    <div id="compareModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeCompareModal()">&times;</span>
-            <h2>Sammenlign Abonnementer</h2>
-            <table class="compare-table" id="compareTable">
-                <thead>
-                    <tr>
-                        <th>Udbyder</th>
-                        <th>Plan</th>
-                        <th>Data (GB)</th>
-                        <th>Pris (DKK)</th>
-                        <th>Trustpilot</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+        
+        <!-- Compare Modal -->
+        <div id="compareModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeCompareModal()">&times;</span>
+                <h2>Sammenlign Abonnementer</h2>
+                <table class="compare-table" id="compareTable">
+                    <thead>
+                        <tr>
+                            <th>Udbyder</th>
+                            <th>Plan</th>
+                            <th>Data (GB)</th>
+                            <th>Pris (DKK)</th>
+                            <th>Trustpilot</th>
+                            <th>Features</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -471,6 +601,12 @@
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
         let showFavoritesOnly = false;
 
+        // Wishlist
+        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+
+        // Recommendations Chart
+        let recommendChart = null;
+
         // Load CSV Data
         function loadCSV() {
             document.getElementById('loader').style.display = 'block';
@@ -478,7 +614,11 @@
                 download: true,
                 header: true,
                 complete: function(results) {
-                    plans = results.data;
+                    plans = results.data.map((plan, index) => ({
+                        ...plan,
+                        id: plan.id || index.toString(), // Ensure each plan has a unique ID
+                        features: plan.features ? plan.features.split(';') : []
+                    }));
                     calculateScores();
                     determineBestOffer();
                     filterAndSort();
@@ -523,6 +663,7 @@
                 const matchesSearch = plan.provider.toLowerCase().includes(searchQuery) ||
                                       plan.plan.toLowerCase().includes(searchQuery);
                 const isFavorite = favorites.includes(plan.id);
+                const isInWishlist = wishlist.includes(plan.id);
                 return meetsData && meetsPrice && matchesSearch && (!showFavoritesOnly || isFavorite);
             });
 
@@ -615,6 +756,19 @@
                 }
                 star.onclick = () => toggleFavorite(plan.id, star);
                 favoriteCell.appendChild(star);
+
+                // Features Cell
+                const featuresCell = row.insertCell(7);
+                if (plan.features.length > 0) {
+                    plan.features.forEach(feature => {
+                        const tag = document.createElement('span');
+                        tag.classList.add('tag');
+                        tag.textContent = feature.trim();
+                        featuresCell.appendChild(tag);
+                    });
+                } else {
+                    featuresCell.textContent = 'Ingen';
+                }
 
                 // Apply Best Offer Styling
                 if (plan === bestOffer) {
@@ -731,6 +885,7 @@
                 row.insertCell(2).textContent = plan.data === "1000" ? "♾️ Ubegrænset" : `${plan.data} GB`;
                 row.insertCell(3).textContent = `${plan.price} kr`;
                 row.insertCell(4).textContent = `${plan.trustpilot} ⭐`;
+                row.insertCell(5).innerHTML = plan.features.length > 0 ? plan.features.map(f => `<span class="tag">${f.trim()}</span>`).join(' ') : 'Ingen';
             });
 
             document.getElementById('compareModal').style.display = 'block';
@@ -760,6 +915,133 @@
             document.getElementById('favoritesFilterBtn').textContent = showFavoritesOnly ? "🔄 Vis Alle" : "⭐ Vis Favoritter";
             filterAndSort();
         }
+
+        // Wishlist Feature
+        function addToWishlist(planId) {
+            if (!wishlist.includes(planId)) {
+                wishlist.push(planId);
+                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+                alert("Plan tilføjet til ønskelisten!");
+            } else {
+                alert("Planen er allerede på ønskelisten.");
+            }
+        }
+
+        function clearWishlist() {
+            if (confirm("Er du sikker på, at du vil rydde din ønskeliste?")) {
+                wishlist = [];
+                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+                alert("Ønskelisten er ryddet.");
+                filterAndSort();
+            }
+        }
+
+        // Generate Recommendations
+        function generateRecommendations() {
+            const dataUsage = parseFloat(document.getElementById('recommendData').value);
+            const callMinutes = parseFloat(document.getElementById('recommendCalls').value);
+            const international = document.getElementById('recommendInternational').value === 'yes';
+
+            // Simple Recommendation Algorithm
+            const recommendedPlans = plans.filter(plan => {
+                const planData = parseFloat(plan.data);
+                const planCalls = parseFloat(plan.calls) || 0; // Assuming 'calls' field exists
+                const hasInternational = plan.features.includes('International');
+
+                return planData >= dataUsage &&
+                       planCalls >= callMinutes &&
+                       (!international || hasInternational);
+            }).sort((a, b) => b.score - a.score).slice(0, 5); // Top 5 recommendations
+
+            // Display Recommendations in Chart
+            const labels = recommendedPlans.map(plan => plan.provider + " " + plan.plan);
+            const data = recommendedPlans.map(plan => ({
+                price: parseFloat(plan.price),
+                data: parseFloat(plan.data),
+                trust: parseFloat(plan.trustpilot)
+            }));
+
+            if (recommendChart) {
+                recommendChart.destroy();
+            }
+
+            const ctx = document.getElementById('recommendChart').getContext('2d');
+            recommendChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Pris (kr)',
+                            data: data.map(d => d.price),
+                            backgroundColor: 'rgba(0, 122, 255, 0.6)',
+                            borderColor: 'rgba(0, 122, 255, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Data (GB)',
+                            data: data.map(d => d.data),
+                            backgroundColor: 'rgba(76, 175, 80, 0.6)',
+                            borderColor: 'rgba(76, 175, 80, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Trustpilot ⭐',
+                            data: data.map(d => d.trust),
+                            backgroundColor: 'rgba(255, 193, 7, 0.6)',
+                            borderColor: 'rgba(255, 193, 7, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Cost Estimator Function
+        function estimateCosts() {
+            const costData = parseFloat(document.getElementById('costData').value);
+            const costCalls = parseFloat(document.getElementById('costCalls').value);
+
+            const plansToEstimate = plans.map(plan => {
+                const dataCharge = costData > parseFloat(plan.data) ? (costData - parseFloat(plan.data)) * 10 : 0; // Example: 10 kr per extra GB
+                const callCharge = costCalls > (parseFloat(plan.calls) || 0) ? (costCalls - (parseFloat(plan.calls) || 0)) * 0.5 : 0; // Example: 0.5 kr per extra minute
+                const totalMonthly = parseFloat(plan.price) + dataCharge + callCharge;
+                const totalYearly = totalMonthly * 12;
+                return {
+                    ...plan,
+                    totalMonthly,
+                    totalYearly
+                };
+            });
+
+            // Sort by total monthly cost
+            plansToEstimate.sort((a, b) => a.totalMonthly - b.totalMonthly);
+
+            // Display Top 5 Cheapest Plans
+            const topPlans = plansToEstimate.slice(0, 5);
+            const resultsDiv = document.getElementById('costResults');
+            resultsDiv.innerHTML = '<h3>Top 5 Billigste Abonnementer:</h3>';
+            const ul = document.createElement('ul');
+            topPlans.forEach(plan => {
+                const li = document.createElement('li');
+                li.textContent = `${plan.provider} ${plan.plan}: ${plan.totalMonthly.toFixed(2)} kr/måned (${plan.totalYearly.toFixed(2)} kr/år)`;
+                ul.appendChild(li);
+            });
+            resultsDiv.appendChild(ul);
+        }
+
+        // Recommendations Event Listeners (Optional: Real-time updates)
+        document.getElementById('recommendData').addEventListener('input', generateRecommendations);
+        document.getElementById('recommendCalls').addEventListener('input', generateRecommendations);
+        document.getElementById('recommendInternational').addEventListener('change', generateRecommendations);
 
         // Initialize on Window Load
         window.onload = function() {
