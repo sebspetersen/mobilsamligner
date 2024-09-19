@@ -86,7 +86,7 @@
         .highlight {
             background-color: #fffacd;
         }
-        .top-result {
+        .best-offer {
             animation: glow 2s infinite alternate;
             position: relative;
             z-index: 1;
@@ -99,7 +99,7 @@
                 box-shadow: 0 0 20px 5px #ffd700;
             }
         }
-        .top-result::before {
+        .best-offer::before {
             content: "🏆 Bedste tilbud!";
             position: absolute;
             top: -25px;
@@ -125,10 +125,12 @@
             <label><span class="emoji">🔀</span> Sorter efter:</label>
             <select id="sortBy">
                 <option value="price">💰 Pris</option>
-                <option value="best">🏆 Bedst (Pris + Trustpilot)</option>
+                <option value="data">📊 Data</option>
+                <option value="trustpilot">⭐ Trustpilot</option>
+                <option value="best">🏆 Bedst (Pris + Data + Trustpilot)</option>
             </select>
             
-            <button onclick="filterAndSort()"><span class="emoji">🔍</span> Find bedste abonnement</button>
+            <button onclick="filterAndSort()"><span class="emoji">🔍</span> Find abonnementer</button>
         </div>
         <table id="planTable">
             <thead>
@@ -153,8 +155,22 @@
                 header: true,
                 complete: function(results) {
                     plans = results.data;
+                    calculateScores();
                     filterAndSort();
                 }
+            });
+        }
+
+        function calculateScores() {
+            const maxData = Math.max(...plans.map(plan => parseFloat(plan.data)));
+            const maxPrice = Math.max(...plans.map(plan => parseFloat(plan.price)));
+            
+            plans.forEach(plan => {
+                const dataScore = parseFloat(plan.data) / maxData;
+                const priceScore = 1 - (parseFloat(plan.price) / maxPrice);
+                const trustpilotScore = parseFloat(plan.trustpilot) / 5;
+                
+                plan.score = (dataScore + priceScore + trustpilotScore) / 3;
             });
         }
 
@@ -167,12 +183,17 @@
             });
 
             plans.sort((a, b) => {
-                if (sortBy === 'price') {
-                    return parseFloat(a.price) - parseFloat(b.price);
-                } else if (sortBy === 'best') {
-                    const scoreA = (parseFloat(a.trustpilot) * 2) - parseFloat(a.price);
-                    const scoreB = (parseFloat(b.trustpilot) * 2) - parseFloat(b.price);
-                    return scoreB - scoreA;
+                switch(sortBy) {
+                    case 'price':
+                        return parseFloat(a.price) - parseFloat(b.price);
+                    case 'data':
+                        return parseFloat(b.data) - parseFloat(a.data);
+                    case 'trustpilot':
+                        return parseFloat(b.trustpilot) - parseFloat(a.trustpilot);
+                    case 'best':
+                        return b.score - a.score;
+                    default:
+                        return 0;
                 }
             });
 
@@ -183,7 +204,8 @@
             const tbody = document.querySelector('#planTable tbody');
             tbody.innerHTML = '';
 
-            let topResultDisplayed = false;
+            const bestOffer = plans.reduce((best, current) => 
+                (current.score > best.score && current.matchesFilter) ? current : best, plans[0]);
 
             plansToDisplay.forEach((plan, index) => {
                 const row = tbody.insertRow();
@@ -191,9 +213,8 @@
                     row.classList.add('filtered-out');
                 } else {
                     row.classList.add('highlight');
-                    if (!topResultDisplayed) {
-                        row.classList.add('top-result');
-                        topResultDisplayed = true;
+                    if (plan === bestOffer) {
+                        row.classList.add('best-offer');
                     }
                 }
                 row.insertCell(0).textContent = plan.provider;
