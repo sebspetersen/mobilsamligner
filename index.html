@@ -573,20 +573,20 @@
         <div class="filters">
             <div class="filter-group">
                 <label for="dataSlider"><span class="emoji">📊</span> Min. data (GB):</label>
-                <input type="range" id="dataSlider" min="0" max="1000" step="10" value="0">
+                <input type="range" id="dataSlider" min="0" max="100" step="1" value="0">
                 <div class="range-values">
                     <span>0 GB</span>
                     <span id="dataValue">0 GB</span>
-                    <span>1000 GB</span>
+                    <span>100 GB <span class="unlimited-data-label">♾️ Ubegrænset</span></span>
                 </div>
             </div>
             <div class="filter-group">
                 <label for="priceSlider"><span class="emoji">💰</span> Maks. pris (DKK):</label>
-                <input type="range" id="priceSlider" min="0" max="5000" step="50" value="5000">
+                <input type="range" id="priceSlider" min="0" max="400" step="10" value="400">
                 <div class="range-values">
                     <span>0 kr</span>
-                    <span id="priceValue">5000 kr</span>
-                    <span>5000 kr</span>
+                    <span id="priceValue">400 kr</span>
+                    <span>400 kr</span>
                 </div>
             </div>
             <div class="search-group">
@@ -761,7 +761,7 @@
 
             // Filter Plans
             let filteredPlans = plans.filter(plan => {
-                const meetsData = parseFloat(plan.data) >= minData;
+                const meetsData = parseFloat(plan.data) >= minData || parseFloat(plan.data) === 1000;
                 const meetsPrice = parseFloat(plan.price) <= maxPrice;
                 const matchesSearch = plan.provider.toLowerCase().includes(searchQuery) ||
                                       plan.plan.toLowerCase().includes(searchQuery);
@@ -1050,7 +1050,7 @@
                 const planCalls = parseFloat(plan.calls) || 0; // Assuming 'calls' field exists
                 const hasInternational = plan.features.includes('International');
 
-                return planData >= dataUsage &&
+                return (planData >= dataUsage || planData === 1000) &&
                        planCalls >= callMinutes &&
                        (!international || hasInternational);
             }).sort((a, b) => b.score - a.score).slice(0, 5); // Top 5 recommendations
@@ -1122,8 +1122,12 @@
             const costCalls = parseFloat(document.getElementById('costCalls').value);
 
             const plansToEstimate = plans.map(plan => {
-                const dataCharge = costData > parseFloat(plan.data) ? (costData - parseFloat(plan.data)) * 10 : 0; // Example: 10 kr per extra GB
-                const callCharge = costCalls > (parseFloat(plan.calls) || 0) ? (costCalls - (parseFloat(plan.calls) || 0)) * 0.5 : 0; // Example: 0.5 kr per extra minute
+                const planData = parseFloat(plan.data);
+                const planCalls = parseFloat(plan.calls) || 0;
+
+                // Calculate additional charges only if data or calls exceed the plan's limits
+                const dataCharge = (costData > planData && planData !== 1000) ? (costData - planData) * 10 : 0; // 10 kr per extra GB
+                const callCharge = (costCalls > planCalls) ? (costCalls - planCalls) * 0.5 : 0; // 0.5 kr per extra minute
                 const totalMonthly = parseFloat(plan.price) + dataCharge + callCharge;
                 const totalYearly = totalMonthly * 12;
                 return {
@@ -1155,8 +1159,12 @@
             section.classList.toggle('visible');
             const button = document.querySelector(`button[onclick="toggleSection('${sectionId}')"]`);
             if (section.classList.contains('visible')) {
+                // Change button text from "Vis" (Show) to "Skjul" (Hide)
+                const emoji = button.querySelector('.emoji').outerHTML;
                 button.innerHTML = button.innerHTML.replace('Vis', 'Skjul');
             } else {
+                // Change button text from "Skjul" (Hide) back to "Vis" (Show)
+                const emoji = button.querySelector('.emoji').outerHTML;
                 button.innerHTML = button.innerHTML.replace('Skjul', 'Vis');
             }
         }
