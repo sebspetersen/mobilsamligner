@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📱 Mobilabonnementer DK</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .filters label {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+        }
+        input, select, button {
+            font-size: 1em;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        button {
+            background-color: #007aff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            background-color: #fff;
+        }
+        th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+        }
+        tr {
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        tr:hover {
+            transform: translateY(-2px);
+        }
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Mobilabonnementer i Danmark</h1>
+        <div class="filters">
+            <label><span class="emoji">📊</span> Min. data (GB):</label>
+            <input type="number" id="minData" min="0" step="1" value="0">
+            
+            <label><span class="emoji">🔀</span> Sorter efter:</label>
+            <select id="sortBy">
+                <option value="price">💰 Pris</option>
+                <option value="best">🏆 Bedst (Pris + Trustpilot)</option>
+            </select>
+            
+            <button onclick="filterAndSort()"><span class="emoji">🔍</span> Find bedste abonnement</button>
+        </div>
+        <table id="planTable">
+            <thead>
+                <tr>
+                    <th><span class="emoji">🏢</span> Udbyder</th>
+                    <th><span class="emoji">📝</span> Plan</th>
+                    <th><span class="emoji">📊</span> Data (GB)</th>
+                    <th><span class="emoji">💰</span> Pris (DKK)</th>
+                    <th><span class="emoji">⭐</span> Trustpilot</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script>
+        let plans = [];
+
+        function loadCSV() {
+            Papa.parse("mobile_plans.csv", {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    plans = results.data;
+                    filterAndSort();
+                }
+            });
+        }
+
+        function filterAndSort() {
+            const minData = parseFloat(document.getElementById('minData').value) || 0;
+            const sortBy = document.getElementById('sortBy').value;
+
+            let filteredPlans = plans.filter(plan => parseFloat(plan.data) >= minData);
+
+            if (sortBy === 'price') {
+                filteredPlans.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+            } else if (sortBy === 'best') {
+                filteredPlans.sort((a, b) => {
+                    const scoreA = (parseFloat(a.trustpilot) * 2) - parseFloat(a.price);
+                    const scoreB = (parseFloat(b.trustpilot) * 2) - parseFloat(b.price);
+                    return scoreB - scoreA;
+                });
+            }
+
+            displayPlans(filteredPlans);
+        }
+
+        function displayPlans(plansToDisplay) {
+            const tbody = document.querySelector('#planTable tbody');
+            tbody.innerHTML = '';
+
+            plansToDisplay.forEach(plan => {
+                const row = tbody.insertRow();
+                row.insertCell(0).textContent = plan.provider;
+                row.insertCell(1).textContent = plan.plan;
+                row.insertCell(2).textContent = plan.data;
+                row.insertCell(3).textContent = `${plan.price} kr`;
+                row.insertCell(4).textContent = `${plan.trustpilot} ⭐`;
+            });
+        }
+
+        window.onload = loadCSV;
+    </script>
+</body>
+</html>
