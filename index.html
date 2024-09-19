@@ -124,10 +124,11 @@
             font-size: 0.75em;
             font-weight: bold;
             z-index: 1;
+            white-space: nowrap; /* Prevents label from pushing content */
         }
         .unlimited-data {
             position: relative;
-            padding-right: 90px;
+            white-space: nowrap; /* Prevents text wrapping */
         }
         .unlimited-data::after {
             content: "♾️ Ubegrænset";
@@ -140,7 +141,8 @@
             color: white;
             padding: 2px 6px;
             border-radius: 10px;
-            white-space: nowrap;
+            white-space: nowrap; /* Prevents label from pushing content */
+            pointer-events: none; /* Ensures label is unclickable */
         }
     </style>
 </head>
