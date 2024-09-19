@@ -30,25 +30,33 @@
         .filters {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 20px;
             margin-bottom: 20px;
         }
-        .filters label {
-            display: flex;
-            align-items: center;
-            font-weight: bold;
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
         }
-        input, select, button {
-            font-size: 1em;
-            padding: 8px;
-            border: 2px solid #ddd;
-            border-radius: 4px;
-            background-color: #fff;
+        .filters label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .range-values {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8em;
+            color: #666;
         }
         button {
             background-color: #007aff;
             color: #fff;
             border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
@@ -76,28 +84,19 @@
         tr:hover {
             transform: translateY(-2px);
         }
-        tr.filtered-out {
-            opacity: 0.5;
-        }
         .emoji {
             font-size: 1.2em;
             margin-right: 5px;
-        }
-        .highlight {
-            background-color: #fffacd;
         }
         .best-offer {
             animation: glow 2s infinite alternate;
             position: relative;
             z-index: 1;
+            background-color: #fffacd;
         }
         @keyframes glow {
-            from {
-                box-shadow: 0 0 5px -5px #ffd700;
-            }
-            to {
-                box-shadow: 0 0 20px 5px #ffd700;
-            }
+            from { box-shadow: 0 0 5px -5px #ffd700; }
+            to { box-shadow: 0 0 20px 5px #ffd700; }
         }
         .best-offer::before {
             content: "🏆 Bedste tilbud!";
@@ -113,23 +112,62 @@
             font-weight: bold;
             white-space: nowrap;
         }
+        .good-value {
+            background-color: #e6f3ff;
+            position: relative;
+        }
+        .good-value::before {
+            content: "💎 God værdi";
+            position: absolute;
+            top: -20px;
+            left: 10px;
+            background-color: #4da6ff;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+        .great-data {
+            background-color: #e6fff2;
+            position: relative;
+        }
+        .great-data::before {
+            content: "📊 Masser af data";
+            position: absolute;
+            top: -20px;
+            left: 10px;
+            background-color: #00cc66;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>📱 Mobilabonnementer i Danmark</h1>
         <div class="filters">
-            <label><span class="emoji">📊</span> Min. data (GB):</label>
-            <input type="number" id="minData" min="0" step="1" value="0">
-            
-            <label><span class="emoji">🔀</span> Sorter efter:</label>
-            <select id="sortBy">
-                <option value="price">💰 Pris</option>
-                <option value="data">📊 Data</option>
-                <option value="trustpilot">⭐ Trustpilot</option>
-                <option value="best">🏆 Bedst (Pris + Data + Trustpilot)</option>
-            </select>
-            
+            <div class="filter-group">
+                <label for="dataSlider"><span class="emoji">📊</span> Min. data (GB):</label>
+                <input type="range" id="dataSlider" min="0" max="100" step="1" value="0">
+                <div class="range-values">
+                    <span>0 GB</span>
+                    <span id="dataValue">0 GB</span>
+                    <span>100 GB</span>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label for="priceSlider"><span class="emoji">💰</span> Maks. pris (DKK):</label>
+                <input type="range" id="priceSlider" min="0" max="500" step="10" value="500">
+                <div class="range-values">
+                    <span>0 kr</span>
+                    <span id="priceValue">500 kr</span>
+                    <span>500 kr</span>
+                </div>
+            </div>
             <button onclick="filterAndSort()"><span class="emoji">🔍</span> Find abonnementer</button>
         </div>
         <table id="planTable">
@@ -175,27 +213,14 @@
         }
 
         function filterAndSort() {
-            const minData = parseFloat(document.getElementById('minData').value) || 0;
-            const sortBy = document.getElementById('sortBy').value;
+            const minData = parseFloat(document.getElementById('dataSlider').value);
+            const maxPrice = parseFloat(document.getElementById('priceSlider').value);
 
             plans.forEach(plan => {
-                plan.matchesFilter = parseFloat(plan.data) >= minData;
+                plan.matchesFilter = parseFloat(plan.data) >= minData && parseFloat(plan.price) <= maxPrice;
             });
 
-            plans.sort((a, b) => {
-                switch(sortBy) {
-                    case 'price':
-                        return parseFloat(a.price) - parseFloat(b.price);
-                    case 'data':
-                        return parseFloat(b.data) - parseFloat(a.data);
-                    case 'trustpilot':
-                        return parseFloat(b.trustpilot) - parseFloat(a.trustpilot);
-                    case 'best':
-                        return b.score - a.score;
-                    default:
-                        return 0;
-                }
-            });
+            plans.sort((a, b) => b.score - a.score);
 
             displayPlans(plans);
         }
@@ -204,19 +229,20 @@
             const tbody = document.querySelector('#planTable tbody');
             tbody.innerHTML = '';
 
-            const bestOffer = plans.reduce((best, current) => 
-                (current.score > best.score && current.matchesFilter) ? current : best, plans[0]);
+            const bestOffer = plansToDisplay.find(plan => plan.matchesFilter);
 
             plansToDisplay.forEach((plan, index) => {
+                if (!plan.matchesFilter) return;
+
                 const row = tbody.insertRow();
-                if (!plan.matchesFilter) {
-                    row.classList.add('filtered-out');
-                } else {
-                    row.classList.add('highlight');
-                    if (plan === bestOffer) {
-                        row.classList.add('best-offer');
-                    }
+                if (plan === bestOffer) {
+                    row.classList.add('best-offer');
+                } else if (parseFloat(plan.data) / parseFloat(plan.price) > 0.2) {
+                    row.classList.add('great-data');
+                } else if (plan.score > 0.6) {
+                    row.classList.add('good-value');
                 }
+
                 row.insertCell(0).textContent = plan.provider;
                 row.insertCell(1).textContent = plan.plan;
                 row.insertCell(2).textContent = plan.data;
@@ -225,7 +251,19 @@
             });
         }
 
-        window.onload = loadCSV;
+        function updateSliderValue(sliderId, valueId, unit) {
+            const slider = document.getElementById(sliderId);
+            const valueSpan = document.getElementById(valueId);
+            slider.oninput = function() {
+                valueSpan.textContent = this.value + ' ' + unit;
+            }
+        }
+
+        window.onload = function() {
+            loadCSV();
+            updateSliderValue('dataSlider', 'dataValue', 'GB');
+            updateSliderValue('priceSlider', 'priceValue', 'kr');
+        };
     </script>
 </body>
 </html>
