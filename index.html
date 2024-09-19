@@ -21,6 +21,7 @@
             --label-best-offer: #ffd700;
             --label-good-value: #4da6ff;
             --label-unlimited-data: #4CAF50;
+            --favorite-color: #ffcc00;
         }
 
         body.dark-mode {
@@ -37,6 +38,7 @@
             --label-best-offer: #ffd700;
             --label-good-value: #4da6ff;
             --label-unlimited-data: #4CAF50;
+            --favorite-color: #ffcc00;
         }
 
         body {
@@ -49,7 +51,7 @@
             transition: background-color 0.3s, color 0.3s;
         }
         .container {
-            max-width: 1000px;
+            max-width: 1200px;
             margin: 0 auto;
             background-color: var(--container-bg);
             padding: 20px;
@@ -125,6 +127,19 @@
             font-weight: bold;
             cursor: pointer;
             user-select: none;
+            position: relative;
+        }
+        th.sort-asc::after {
+            content: " ▲";
+            position: absolute;
+            right: 10px;
+            font-size: 0.8em;
+        }
+        th.sort-desc::after {
+            content: " ▼";
+            position: absolute;
+            right: 10px;
+            font-size: 0.8em;
         }
         tr {
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -174,6 +189,17 @@
             border: 2px solid var(--best-offer-border);
             box-shadow: 0 0 10px var(--best-offer-shadow);
             background-color: var(--best-offer-bg);
+        }
+
+        /* Favorite Star Styles */
+        .favorite {
+            cursor: pointer;
+            font-size: 1.5em;
+            color: #ccc;
+            transition: color 0.3s;
+        }
+        .favorite.favorited {
+            color: var(--favorite-color);
         }
 
         /* Dark mode specific styles */
@@ -290,6 +316,73 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Compare Modal Styles */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.5); 
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: var(--container-bg);
+            margin: 5% auto; 
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            width: 80%; 
+            border-radius: 8px;
+            position: relative;
+            color: var(--text-color);
+        }
+
+        .close {
+            color: var(--text-color);
+            position: absolute;
+            top: 10px;
+            right: 25px;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+        }
+
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .compare-table th, .compare-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .filters, .controls {
+                flex-direction: column;
+            }
+
+            th, td {
+                font-size: 0.9em;
+            }
+
+            .label {
+                font-size: 0.7em;
+                padding: 1px 6px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -328,16 +421,20 @@
                     <span class="slider"></span>
                 </label>
             </div>
+            <button onclick="openCompareModal()"><span class="emoji">🔍</span> Sammenlign valgte</button>
+            <button onclick="toggleFavoritesFilter()" id="favoritesFilterBtn"><span class="emoji">⭐</span> Vis Favoritter</button>
         </div>
         <div class="loader" id="loader"></div>
         <table id="planTable">
             <thead>
                 <tr>
+                    <th><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
                     <th data-sort="provider"><span class="emoji">🏢</span> Udbyder</th>
                     <th data-sort="plan"><span class="emoji">📝</span> Plan</th>
                     <th data-sort="data"><span class="emoji">📊</span> Data (GB)</th>
                     <th data-sort="price"><span class="emoji">💰</span> Pris (DKK)</th>
                     <th data-sort="trustpilot"><span class="emoji">⭐</span> Trustpilot</th>
+                    <th>Favorit</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -345,11 +442,34 @@
         <div class="pagination" id="pagination"></div>
     </div>
 
+    <!-- Compare Modal -->
+    <div id="compareModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCompareModal()">&times;</span>
+            <h2>Sammenlign Abonnementer</h2>
+            <table class="compare-table" id="compareTable">
+                <thead>
+                    <tr>
+                        <th>Udbyder</th>
+                        <th>Plan</th>
+                        <th>Data (GB)</th>
+                        <th>Pris (DKK)</th>
+                        <th>Trustpilot</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
     <script>
         let plans = [];
+        let bestOffer = null;
         let currentPage = 1;
         const rowsPerPage = 10;
         let currentSort = { column: null, ascending: true };
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        let showFavoritesOnly = false;
 
         // Load CSV Data
         function loadCSV() {
@@ -360,6 +480,7 @@
                 complete: function(results) {
                     plans = results.data;
                     calculateScores();
+                    determineBestOffer();
                     filterAndSort();
                     document.getElementById('loader').style.display = 'none';
                 },
@@ -384,6 +505,11 @@
             });
         }
 
+        // Determine the Best Offer (Static)
+        function determineBestOffer() {
+            bestOffer = plans.reduce((prev, current) => (prev.score > current.score) ? prev : current, plans[0]);
+        }
+
         // Filter, Sort, and Display Plans
         function filterAndSort() {
             const minData = parseFloat(document.getElementById('dataSlider').value);
@@ -391,12 +517,13 @@
             const searchQuery = document.getElementById('searchInput').value.toLowerCase();
 
             // Filter Plans
-            const filteredPlans = plans.filter(plan => {
+            let filteredPlans = plans.filter(plan => {
                 const meetsData = parseFloat(plan.data) >= minData;
                 const meetsPrice = parseFloat(plan.price) <= maxPrice;
                 const matchesSearch = plan.provider.toLowerCase().includes(searchQuery) ||
                                       plan.plan.toLowerCase().includes(searchQuery);
-                return meetsData && meetsPrice && matchesSearch;
+                const isFavorite = favorites.includes(plan.id);
+                return meetsData && meetsPrice && matchesSearch && (!showFavoritesOnly || isFavorite);
             });
 
             // Sort Plans
@@ -440,14 +567,19 @@
             const end = start + rowsPerPage;
             const paginatedPlans = plansToDisplay.slice(start, end);
 
-            // Identify Best Offer (First in the list after sorting)
-            const bestOffer = paginatedPlans.length > 0 ? paginatedPlans[0] : null;
-
             paginatedPlans.forEach(plan => {
                 const row = tbody.insertRow();
 
+                // Selection Checkbox
+                const selectCell = row.insertCell(0);
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.classList.add('select-plan');
+                checkbox.value = plan.id;
+                selectCell.appendChild(checkbox);
+
                 // Provider Cell
-                const providerCell = row.insertCell(0);
+                const providerCell = row.insertCell(1);
                 if (plan === bestOffer) {
                     providerCell.innerHTML = `<span class="label best-offer-label">🏆 Bedste tilbud!</span> ${plan.provider}`;
                 } else if (isGoodValue(plan)) {
@@ -457,10 +589,10 @@
                 }
 
                 // Plan Cell
-                row.insertCell(1).textContent = plan.plan;
+                row.insertCell(2).textContent = plan.plan;
 
                 // Data Cell
-                const dataCell = row.insertCell(2);
+                const dataCell = row.insertCell(3);
                 if (parseFloat(plan.data) === 1000) { // Assuming 1000 GB represents "Ubegrænset"
                     dataCell.innerHTML = `${plan.data} <span class="label unlimited-data-label">♾️ Ubegrænset</span>`;
                 } else {
@@ -468,10 +600,21 @@
                 }
 
                 // Price Cell
-                row.insertCell(3).textContent = `${plan.price} kr`;
+                row.insertCell(4).textContent = `${plan.price} kr`;
 
                 // Trustpilot Cell
-                row.insertCell(4).textContent = `${plan.trustpilot} ⭐`;
+                row.insertCell(5).textContent = `${plan.trustpilot} ⭐`;
+
+                // Favorite Cell
+                const favoriteCell = row.insertCell(6);
+                const star = document.createElement('span');
+                star.classList.add('favorite');
+                star.innerHTML = favorites.includes(plan.id) ? '★' : '☆';
+                if (favorites.includes(plan.id)) {
+                    star.classList.add('favorited');
+                }
+                star.onclick = () => toggleFavorite(plan.id, star);
+                favoriteCell.appendChild(star);
 
                 // Apply Best Offer Styling
                 if (plan === bestOffer) {
@@ -494,6 +637,7 @@
             pagination.innerHTML = '';
 
             const totalPages = Math.ceil(plansToPaginate.length / rowsPerPage);
+            if (totalPages <= 1) return; // No need for pagination
 
             for (let i = 1; i <= totalPages; i++) {
                 const button = document.createElement('button');
@@ -522,7 +666,7 @@
         }
 
         // Column Sorting Event Listeners
-        document.querySelectorAll('#planTable th').forEach(header => {
+        document.querySelectorAll('#planTable th[data-sort]').forEach(header => {
             header.addEventListener('click', () => {
                 const sortKey = header.getAttribute('data-sort');
                 if (currentSort.column === sortKey) {
@@ -531,6 +675,13 @@
                     currentSort.column = sortKey;
                     currentSort.ascending = true;
                 }
+
+                // Update sort indicators
+                document.querySelectorAll('#planTable th').forEach(th => {
+                    th.classList.remove('sort-asc', 'sort-desc');
+                });
+                header.classList.add(currentSort.ascending ? 'sort-asc' : 'sort-desc');
+
                 filterAndSort();
             });
         });
@@ -555,11 +706,74 @@
             filterAndSort();
         });
 
+        // Toggle Select All Checkboxes
+        function toggleSelectAll(source) {
+            const checkboxes = document.querySelectorAll('.select-plan');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+        }
+
+        // Compare Plans Feature
+        function openCompareModal() {
+            const selectedPlans = Array.from(document.querySelectorAll('.select-plan:checked')).map(cb => cb.value);
+            if (selectedPlans.length < 2) {
+                alert("Vælg mindst to abonnementer at sammenligne.");
+                return;
+            }
+
+            const plansToCompare = plans.filter(plan => selectedPlans.includes(plan.id));
+            const compareTbody = document.querySelector('#compareTable tbody');
+            compareTbody.innerHTML = '';
+
+            plansToCompare.forEach(plan => {
+                const row = compareTbody.insertRow();
+                row.insertCell(0).textContent = plan.provider;
+                row.insertCell(1).textContent = plan.plan;
+                row.insertCell(2).textContent = plan.data === "1000" ? "♾️ Ubegrænset" : `${plan.data} GB`;
+                row.insertCell(3).textContent = `${plan.price} kr`;
+                row.insertCell(4).textContent = `${plan.trustpilot} ⭐`;
+            });
+
+            document.getElementById('compareModal').style.display = 'block';
+        }
+
+        function closeCompareModal() {
+            document.getElementById('compareModal').style.display = 'none';
+        }
+
+        // Favorites Feature
+        function toggleFavorite(planId, starElement) {
+            if (favorites.includes(planId)) {
+                favorites = favorites.filter(id => id !== planId);
+                starElement.classList.remove('favorited');
+                starElement.innerHTML = '☆';
+            } else {
+                favorites.push(planId);
+                starElement.classList.add('favorited');
+                starElement.innerHTML = '★';
+            }
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+        }
+
+        // Toggle Favorites Filter
+        function toggleFavoritesFilter() {
+            showFavoritesOnly = !showFavoritesOnly;
+            document.getElementById('favoritesFilterBtn').textContent = showFavoritesOnly ? "🔄 Vis Alle" : "⭐ Vis Favoritter";
+            filterAndSort();
+        }
+
         // Initialize on Window Load
         window.onload = function() {
             loadCSV();
             updateSliderValue('dataSlider', 'dataValue', 'GB');
             updateSliderValue('priceSlider', 'priceValue', 'kr');
+        };
+
+        // Close Modal When Clicking Outside of It
+        window.onclick = function(event) {
+            const modal = document.getElementById('compareModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
         };
     </script>
 </body>
