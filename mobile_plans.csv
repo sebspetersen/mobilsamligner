@@ -1,9 +1,29 @@
 provider,plan,data,price,trustpilot
-TDC,Basic,10,199,4.2
-Telenor,Premium,20,299,4.5
-telia,Standard,15,249,4
-3,Unlimited,100,399,3.8
-Oister,Budget,5,99,3.5
+YouSee,YouSee Mobil 20,20,149,4.2
+telia,Fri tale Fri data,1000,269,4
+3,Fri tale 10 GB,10,125,3.8
+Oister,Fri Tale 50 GB,50,99,3.5
 Lebara,International,30,349,3.9
-CBB,Flex,25,279,4.1
+CBB,Fri tale 30 GB,30,99,4.1
 Lycamobile,Pay as you go,2,49,3.2
+YouSee,YouSee Mobil 40,40,179,4.2
+YouSee,YouSee Mobil 80,80,219,4.2
+YouSee,YouSee Mobil Fri,1000,279,4.2
+YouSee,3 timer + 3 GB,3,79,4.2
+Telenor,25 GB,25,159,4.5
+Telenor,50 GB,50,189,4.5
+Telenor,100 GB,100,229,4.5
+Telenor,Fri Data,1000,279,4.5
+telia,Fri tale 120 gb,120,189,4
+telia,Fri tale 40 gb,40,149,4
+telia,3 timer + 6 GB,6,89,4
+3,Fri tale 30 GB,30,160,3.8
+3,Fri tale 100 GB,100,210,3.8
+3,Fri Tale Fri Data,1000,270,3.8
+Oister,Fri Tale 30 GB,30,79,3.5
+Oister,Fri Tale 45 GB,45,129,3.5
+Oister,Fri Tale 100 GB,100,109,3.5
+Oister,Fri Tale Fri Data,1000,179,3.5
+CBB,Fri tale 50 GB,50,109,4.1
+CBB,Fri tale 100 GB,100,119,4.1
+CBB,Fri tale Fri Data,1000,199,4.1
