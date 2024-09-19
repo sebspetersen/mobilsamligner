@@ -59,6 +59,8 @@
             border-radius: 4px;
             cursor: pointer;
             transition: background-color 0.3s;
+            align-self: flex-end;
+            height: fit-content;
         }
         button:hover {
             background-color: #0056b3;
@@ -90,59 +92,37 @@
             font-size: 1.2em;
             margin-right: 5px;
         }
-        .best-offer {
-            background-color: #fffacd;
-        }
-        .best-offer::before {
-            content: "🏆 Bedste tilbud!";
-            position: absolute;
-            top: -24px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #ffd700;
-            color: #333;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: bold;
-            white-space: nowrap;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            z-index: 1;
-        }
-        .good-value {
-            background-color: #e6f3ff;
-        }
-        .good-value::before {
-            content: "💎 God værdi";
-            position: absolute;
-            top: -24px;
-            left: 10px;
-            background-color: #4da6ff;
-            color: #fff;
-            padding: 2px 8px;
-            border-radius: 12px;
+        /* Removed pseudo-element styles for best-offer, good-value, and unlimited-data */
+
+        /* New label styles */
+        .label {
+            display: inline-block;
             font-size: 0.75em;
             font-weight: bold;
-            z-index: 1;
-            white-space: nowrap; /* Prevents label from pushing content */
+            white-space: nowrap;
+            margin-right: 5px;
+            padding: 2px 8px;
+            border-radius: 12px;
         }
-        .unlimited-data {
-            position: relative;
-            white-space: nowrap; /* Prevents text wrapping */
+
+        .best-offer-label {
+            background-color: #ffd700;
+            color: #333;
         }
-        .unlimited-data::after {
-            content: "♾️ Ubegrænset";
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
+
+        .good-value-label {
+            background-color: #4da6ff;
+            color: #fff;
+        }
+
+        .unlimited-data-label {
             font-size: 0.85em;
             background-color: #4CAF50;
             color: white;
             padding: 2px 6px;
             border-radius: 10px;
-            white-space: nowrap; /* Prevents label from pushing content */
-            pointer-events: none; /* Ensures label is unclickable */
+            white-space: nowrap;
+            margin-left: 5px;
         }
     </style>
 </head>
@@ -220,38 +200,48 @@
                 plan.matchesFilter = parseFloat(plan.data) >= minData && parseFloat(plan.price) <= maxPrice;
             });
 
-            plans.sort((a, b) => b.score - a.score);
+            const filteredPlans = plans.filter(plan => plan.matchesFilter);
+            filteredPlans.sort((a, b) => b.score - a.score);
 
-            displayPlans(plans);
+            displayPlans(filteredPlans);
         }
 
         function displayPlans(plansToDisplay) {
             const tbody = document.querySelector('#planTable tbody');
             tbody.innerHTML = '';
 
-            const bestOffer = plansToDisplay.find(plan => plan.matchesFilter);
+            const bestOffer = plansToDisplay.length > 0 ? plansToDisplay[0] : null;
 
             plansToDisplay.forEach((plan, index) => {
-                if (!plan.matchesFilter) return;
-
                 const row = tbody.insertRow();
+
+                const providerCell = row.insertCell(0);
+                if (plan === bestOffer) {
+                    providerCell.innerHTML = `<span class="label best-offer-label">🏆 Bedste tilbud!</span> ${plan.provider}`;
+                } else if (isGoodValue(plan)) {
+                    providerCell.innerHTML = `<span class="label good-value-label">💎 God værdi</span> ${plan.provider}`;
+                } else {
+                    providerCell.textContent = plan.provider;
+                }
+
+                row.insertCell(1).textContent = plan.plan;
+
+                const dataCell = row.insertCell(2);
+                if (parseFloat(plan.data) === 1000) { // Assuming 1000 GB represents "Ubegrænset"
+                    dataCell.innerHTML = `${plan.data} <span class="label unlimited-data-label">♾️ Ubegrænset</span>`;
+                } else {
+                    dataCell.textContent = plan.data;
+                }
+
+                row.insertCell(3).textContent = `${plan.price} kr`;
+                row.insertCell(4).textContent = `${plan.trustpilot} ⭐`;
+
+                // Optionally, add classes for styling if needed
                 if (plan === bestOffer) {
                     row.classList.add('best-offer');
                 } else if (isGoodValue(plan)) {
                     row.classList.add('good-value');
                 }
-
-                row.insertCell(0).textContent = plan.provider;
-                row.insertCell(1).textContent = plan.plan;
-                
-                const dataCell = row.insertCell(2);
-                dataCell.textContent = plan.data;
-                if (parseFloat(plan.data) === 1000) {
-                    dataCell.classList.add('unlimited-data');
-                }
-                
-                row.insertCell(3).textContent = `${plan.price} kr`;
-                row.insertCell(4).textContent = `${plan.trustpilot} ⭐`;
             });
         }
 
@@ -263,8 +253,9 @@
         function updateSliderValue(sliderId, valueId, unit) {
             const slider = document.getElementById(sliderId);
             const valueSpan = document.getElementById(valueId);
+            valueSpan.textContent = `${slider.value} ${unit}`; // Initialize display
             slider.oninput = function() {
-                valueSpan.textContent = this.value + ' ' + unit;
+                valueSpan.textContent = `${this.value} ${unit}`;
             }
         }
 
