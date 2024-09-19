@@ -92,8 +92,6 @@
             font-size: 1.2em;
             margin-right: 5px;
         }
-        /* Removed pseudo-element styles for best-offer, good-value, and unlimited-data */
-
         /* New label styles */
         .label {
             display: inline-block;
@@ -123,6 +121,14 @@
             border-radius: 10px;
             white-space: nowrap;
             margin-left: 5px;
+        }
+
+        /* Border and glow for best offer row */
+        tr.best-offer td {
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+            /* Optional: slightly adjust background to blend with glow */
+            background-color: #fffacd;
         }
     </style>
 </head>
@@ -175,6 +181,9 @@
                     plans = results.data;
                     calculateScores();
                     filterAndSort();
+                },
+                error: function(error) {
+                    console.error("Error loading CSV:", error);
                 }
             });
         }
@@ -236,7 +245,7 @@
                 row.insertCell(3).textContent = `${plan.price} kr`;
                 row.insertCell(4).textContent = `${plan.trustpilot} ⭐`;
 
-                // Optionally, add classes for styling if needed
+                // Add 'best-offer' or 'good-value' classes for styling
                 if (plan === bestOffer) {
                     row.classList.add('best-offer');
                 } else if (isGoodValue(plan)) {
