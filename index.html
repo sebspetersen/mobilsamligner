@@ -6,8 +6,8 @@
     <title>📱 Mobilabonnementer DK</title>
     <!-- PapaParse for CSV Parsing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <!-- Chart.js for Interactive Charts -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js for Interactive Charts (Removed if not used) -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> -->
     <!-- Google Fonts for Enhanced Typography -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
@@ -87,7 +87,8 @@
             color: var(--accent-color);
         }
 
-        .filters, .controls, .recommendations, .cost-estimator {
+        /* Filters and Controls */
+        .filters, .controls {
             display: flex;
             flex-wrap: wrap;
             gap: 20px;
@@ -95,18 +96,18 @@
             align-items: center;
         }
 
-        .filter-group, .search-group, .recommendation-group, .cost-group {
+        .filter-group, .search-group {
             flex: 1;
             min-width: 200px;
         }
 
-        .filters label, .search-group label, .recommendation-group label, .cost-group label {
+        .filters label, .search-group label {
             display: block;
             font-weight: 500;
             margin-bottom: 8px;
         }
 
-        input[type="range"], input[type="number"], input[type="text"], select {
+        input[type="range"], input[type="text"], select {
             width: 100%;
             padding: 10px;
             border-radius: 5px;
@@ -114,10 +115,6 @@
             background-color: var(--container-bg);
             color: var(--text-color);
             transition: background-color var(--transition-speed), color var(--transition-speed);
-        }
-
-        .range-values, .search-group, .recommendation-group, .cost-group {
-            margin-top: 5px;
         }
 
         .range-values {
@@ -146,6 +143,7 @@
             transform: translateY(-2px);
         }
 
+        /* Table Styles */
         table {
             width: 100%;
             border-collapse: separate;
@@ -195,11 +193,6 @@
             transform: translateY(-5px);
         }
 
-        .emoji {
-            font-size: 1.2em;
-            margin-right: 5px;
-        }
-
         /* Label Styles */
         .label {
             display: inline-block;
@@ -214,7 +207,7 @@
 
         .best-offer-label {
             background-color: var(--label-best-offer);
-            color: #333333;
+            color: #ffffff;
         }
 
         .good-value-label {
@@ -245,13 +238,6 @@
             transition: background-color var(--transition-speed), color var(--transition-speed);
         }
 
-        /* Border and glow for best offer row */
-        tr.best-offer td {
-            border: 2px solid var(--best-offer-border);
-            box-shadow: 0 0 10px var(--best-offer-shadow);
-            background-color: var(--best-offer-bg);
-        }
-
         /* Favorite Star Styles */
         .favorite {
             cursor: pointer;
@@ -268,10 +254,6 @@
         /* Dark mode specific styles */
         body.dark-mode th {
             background-color: #2c3e50;
-        }
-
-        body.dark-mode tr.best-offer td {
-            background-color: #16a08533; /* Semi-transparent accent color */
         }
 
         /* Pagination Styles */
@@ -381,7 +363,7 @@
             100% { transform: rotate(360deg); }
         }
 
-        /* Compare Modal Styles */
+        /* Modal Styles (Simplified) */
         .modal {
             display: none; 
             position: fixed; 
@@ -401,7 +383,7 @@
             padding: 30px;
             border: 1px solid var(--border-color);
             width: 90%; 
-            max-width: 1000px;
+            max-width: 800px;
             border-radius: 10px;
             position: relative;
             color: var(--text-color);
@@ -443,84 +425,6 @@
             to { opacity: 1; }
         }
 
-        /* Recommendations Section */
-        .recommendations, .cost-estimator {
-            flex-direction: column;
-            overflow: hidden;
-            max-height: 0;
-            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
-        }
-
-        .recommendations.visible, .cost-estimator.visible {
-            max-height: 1000px; /* Large enough to accommodate content */
-            padding: 20px 0;
-            transition: max-height 0.5s ease-in, padding 0.5s ease-in;
-        }
-
-        .recommendations button, .cost-estimator button {
-            width: 100%;
-        }
-
-        /* Toggle Buttons */
-        .toggle-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .toggle-buttons button {
-            flex: 1;
-            min-width: 150px;
-        }
-
-        /* Wishlist Styles */
-        .wishlist-btn {
-            background-color: #e74c3c;
-            margin-left: 10px;
-        }
-
-        .wishlist-btn:hover {
-            background-color: #c0392b;
-        }
-
-        /* Plan Features List */
-        .plan-features {
-            list-style: none;
-            padding: 0;
-            margin: 5px 0 0 0;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-
-        .plan-features li {
-            background-color: var(--tag-bg);
-            color: var(--tag-text);
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.7em;
-            border: 1px solid var(--tag-border);
-            transition: background-color var(--transition-speed), color var(--transition-speed);
-        }
-
-        /* Cost Estimator Styles */
-        .cost-results {
-            margin-top: 15px;
-            font-weight: 500;
-            color: var(--accent-color);
-        }
-
-        /* Recommendations Chart */
-        #recommendChart {
-            max-width: 100%;
-            height: 400px;
-            margin-top: 30px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
         /* Scrollbar Styling */
         ::-webkit-scrollbar {
             width: 8px;
@@ -537,7 +441,7 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            .filters, .controls, .recommendations, .cost-estimator {
+            .filters, .controls {
                 flex-direction: column;
             }
 
@@ -557,10 +461,6 @@
 
             .favorite {
                 font-size: 1.2em;
-            }
-
-            #recommendChart {
-                height: 300px;
             }
         }
     </style>
@@ -596,7 +496,7 @@
             <button onclick="filterAndSort()"><span class="emoji">🔍</span> Find abonnementer</button>
         </div>
         
-        <!-- Toggle Buttons for Hidden Features -->
+        <!-- Controls Section -->
         <div class="controls">
             <div class="toggle-switch">
                 <label for="darkModeToggle">Mørk tilstand</label>
@@ -605,52 +505,11 @@
                     <span class="slider"></span>
                 </label>
             </div>
-            <div class="toggle-buttons">
-                <button onclick="toggleSection('recommendations')"><span class="emoji">💡</span> Vis Anbefalinger</button>
-                <button onclick="toggleSection('costEstimator')"><span class="emoji">💸</span> Vis Omkostningsberegner</button>
-                <button onclick="openCompareModal()"><span class="emoji">📊</span> Sammenlign valgte</button>
-                <button onclick="toggleFavoritesFilter()" id="favoritesFilterBtn"><span class="emoji">⭐</span> Vis Favoritter</button>
-                <button class="wishlist-btn" onclick="clearWishlist()"><span class="emoji">🗑️</span> Ryd Ønskeliste</button>
-            </div>
+            <button onclick="openCompareModal()"><span class="emoji">📊</span> Sammenlign valgte</button>
         </div>
         
         <!-- Loader -->
         <div class="loader" id="loader"></div>
-        
-        <!-- Recommendations Section (Hidden by Default) -->
-        <div class="recommendations" id="recommendations">
-            <div class="recommendation-group">
-                <label for="recommendData">Data Usage (GB):</label>
-                <input type="number" id="recommendData" min="0" max="1000" value="10">
-            </div>
-            <div class="recommendation-group">
-                <label for="recommendCalls">Call Minutes:</label>
-                <input type="number" id="recommendCalls" min="0" max="5000" value="100">
-            </div>
-            <div class="recommendation-group">
-                <label for="recommendInternational">International Usage:</label>
-                <select id="recommendInternational">
-                    <option value="no">Ingen</option>
-                    <option value="yes">Ja</option>
-                </select>
-            </div>
-            <button onclick="generateRecommendations()"><span class="emoji">💡</span> Anbefal mig</button>
-            <canvas id="recommendChart"></canvas>
-        </div>
-        
-        <!-- Cost Estimator Section (Hidden by Default) -->
-        <div class="cost-estimator" id="costEstimator">
-            <div class="cost-group">
-                <label for="costData">Forventet dataforbrug (GB):</label>
-                <input type="number" id="costData" min="0" max="1000" value="10">
-            </div>
-            <div class="cost-group">
-                <label for="costCalls">Forventede opkaldsminutter:</label>
-                <input type="number" id="costCalls" min="0" max="5000" value="100">
-            </div>
-            <button onclick="estimateCosts()"><span class="emoji">💸</span> Beregn omkostninger</button>
-            <div class="cost-results" id="costResults"></div>
-        </div>
         
         <!-- Plans Table -->
         <table id="planTable">
@@ -703,12 +562,6 @@
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
         let showFavoritesOnly = false;
 
-        // Wishlist
-        let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
-
-        // Recommendations Chart
-        let recommendChart = null;
-
         // Load CSV Data
         function loadCSV() {
             document.getElementById('loader').style.display = 'block';
@@ -748,7 +601,7 @@
             });
         }
 
-        // Determine the Best Offer (Static)
+        // Determine the Best Offer
         function determineBestOffer() {
             bestOffer = plans.reduce((prev, current) => (prev.score > current.score) ? prev : current, plans[0]);
         }
@@ -1010,169 +863,6 @@
             }
             localStorage.setItem('favorites', JSON.stringify(favorites));
         }
-
-        // Toggle Favorites Filter
-        function toggleFavoritesFilter() {
-            showFavoritesOnly = !showFavoritesOnly;
-            document.getElementById('favoritesFilterBtn').textContent = showFavoritesOnly ? "🔄 Vis Alle" : "⭐ Vis Favoritter";
-            filterAndSort();
-        }
-
-        // Wishlist Feature
-        function addToWishlist(planId) {
-            if (!wishlist.includes(planId)) {
-                wishlist.push(planId);
-                localStorage.setItem('wishlist', JSON.stringify(wishlist));
-                alert("Plan tilføjet til ønskelisten!");
-            } else {
-                alert("Planen er allerede på ønskelisten.");
-            }
-        }
-
-        function clearWishlist() {
-            if (confirm("Er du sikker på, at du vil rydde din ønskeliste?")) {
-                wishlist = [];
-                localStorage.setItem('wishlist', JSON.stringify(wishlist));
-                alert("Ønskelisten er ryddet.");
-                filterAndSort();
-            }
-        }
-
-        // Generate Recommendations
-        function generateRecommendations() {
-            const dataUsage = parseFloat(document.getElementById('recommendData').value);
-            const callMinutes = parseFloat(document.getElementById('recommendCalls').value);
-            const international = document.getElementById('recommendInternational').value === 'yes';
-
-            // Simple Recommendation Algorithm
-            const recommendedPlans = plans.filter(plan => {
-                const planData = parseFloat(plan.data);
-                const planCalls = parseFloat(plan.calls) || 0; // Assuming 'calls' field exists
-                const hasInternational = plan.features.includes('International');
-
-                return (planData >= dataUsage || planData === 1000) &&
-                       planCalls >= callMinutes &&
-                       (!international || hasInternational);
-            }).sort((a, b) => b.score - a.score).slice(0, 5); // Top 5 recommendations
-
-            // Display Recommendations in Chart
-            const labels = recommendedPlans.map(plan => `${plan.provider} ${plan.plan}`);
-            const data = recommendedPlans.map(plan => ({
-                price: parseFloat(plan.price),
-                data: parseFloat(plan.data),
-                trust: parseFloat(plan.trustpilot)
-            }));
-
-            if (recommendChart) {
-                recommendChart.destroy();
-            }
-
-            const ctx = document.getElementById('recommendChart').getContext('2d');
-            recommendChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Pris (kr)',
-                            data: data.map(d => d.price),
-                            backgroundColor: 'rgba(26, 188, 156, 0.6)',
-                            borderColor: 'rgba(26, 188, 156, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Data (GB)',
-                            data: data.map(d => d.data),
-                            backgroundColor: 'rgba(52, 152, 219, 0.6)',
-                            borderColor: 'rgba(52, 152, 219, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Trustpilot ⭐',
-                            data: data.map(d => d.trust),
-                            backgroundColor: 'rgba(231, 76, 60, 0.6)',
-                            borderColor: 'rgba(231, 76, 60, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        },
-                        title: {
-                            display: true,
-                            text: 'Anbefalede Abonnementer'
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        }
-
-        // Cost Estimator Function
-        function estimateCosts() {
-            const costData = parseFloat(document.getElementById('costData').value);
-            const costCalls = parseFloat(document.getElementById('costCalls').value);
-
-            const plansToEstimate = plans.map(plan => {
-                const planData = parseFloat(plan.data);
-                const planCalls = parseFloat(plan.calls) || 0;
-
-                // Calculate additional charges only if data or calls exceed the plan's limits
-                const dataCharge = (costData > planData && planData !== 1000) ? (costData - planData) * 10 : 0; // 10 kr per extra GB
-                const callCharge = (costCalls > planCalls) ? (costCalls - planCalls) * 0.5 : 0; // 0.5 kr per extra minute
-                const totalMonthly = parseFloat(plan.price) + dataCharge + callCharge;
-                const totalYearly = totalMonthly * 12;
-                return {
-                    ...plan,
-                    totalMonthly,
-                    totalYearly
-                };
-            });
-
-            // Sort by total monthly cost
-            plansToEstimate.sort((a, b) => a.totalMonthly - b.totalMonthly);
-
-            // Display Top 5 Cheapest Plans
-            const topPlans = plansToEstimate.slice(0, 5);
-            const resultsDiv = document.getElementById('costResults');
-            resultsDiv.innerHTML = '<h3>Top 5 Billigste Abonnementer:</h3>';
-            const ul = document.createElement('ul');
-            topPlans.forEach(plan => {
-                const li = document.createElement('li');
-                li.textContent = `${plan.provider} ${plan.plan}: ${plan.totalMonthly.toFixed(2)} kr/måned (${plan.totalYearly.toFixed(2)} kr/år)`;
-                ul.appendChild(li);
-            });
-            resultsDiv.appendChild(ul);
-        }
-
-        // Toggle Sections with Animation
-        function toggleSection(sectionId) {
-            const section = document.getElementById(sectionId);
-            section.classList.toggle('visible');
-            const button = document.querySelector(`button[onclick="toggleSection('${sectionId}')"]`);
-            if (section.classList.contains('visible')) {
-                // Change button text from "Vis" (Show) to "Skjul" (Hide)
-                const emoji = button.querySelector('.emoji').outerHTML;
-                button.innerHTML = button.innerHTML.replace('Vis', 'Skjul');
-            } else {
-                // Change button text from "Skjul" (Hide) back to "Vis" (Show)
-                const emoji = button.querySelector('.emoji').outerHTML;
-                button.innerHTML = button.innerHTML.replace('Skjul', 'Vis');
-            }
-        }
-
-        // Recommendations Event Listeners (Optional: Real-time updates)
-        document.getElementById('recommendData').addEventListener('input', generateRecommendations);
-        document.getElementById('recommendCalls').addEventListener('input', generateRecommendations);
-        document.getElementById('recommendInternational').addEventListener('change', generateRecommendations);
 
         // Initialize on Window Load
         window.onload = function() {
